@@ -20,7 +20,9 @@ def get_PUP_timecourse_object(testSub, ses_of_interest):
 
 def convert_analyze_to_nii(img_path, hdr_path):
     img = nib.load(img_path)
-    nib.save(img, img_path.replace('.img', '.nii'))
+    nii_path = img_path.replace('.img', '.nii.gz')
+    nib.save(img, nii_path)
+
     os.remove(img_path)
     os.remove(hdr_path)
 
@@ -49,7 +51,7 @@ def get_t1w_image(puptimecourse_obj,
     orig_hdr_path = os.path.join("pet_proc", "T1001.4dfp.hdr")
     new_img_path = os.path.join(ses_dir, "sub-" + sub + "_ses-" + ses + "_T1w.img")
     new_hdr_path = os.path.join(ses_dir, "sub-" + sub + "_ses-" + ses + "_T1w.hdr")
-    if not os.path.exists(new_img_path.replace('.img', '.nii*')):
+    if not os.path.exists(new_img_path.replace('.img', '.nii.gz')):
         get_image_and_header(puptimecourse_obj, orig_img_path, orig_hdr_path, new_img_path, new_hdr_path)
     else: 
         print("Found a T1w file for " + sub + " at " + ses)
@@ -63,7 +65,7 @@ def get_orig_pet_image(puptimecourse_obj,
     orig_hdr_path = os.path.join("pet_proc", filename_prefix + ".hdr")
     new_img_path = os.path.join(ses_dir, "sub-" + sub + "_ses-" + ses + "_task-rest_acq-pib_pet.img")
     new_hdr_path = os.path.join(ses_dir, "sub-" + sub + "_ses-" + ses + "_task-rest_acq-pib_pet.hdr")
-    if not os.path.exists(new_img_path.replace('.img', '.nii*')):
+    if not os.path.exists(new_img_path.replace('.img', '.nii.gz')):
         get_image_and_header(puptimecourse_obj, orig_img_path, orig_hdr_path, new_img_path, new_hdr_path)
     else:
         print("Found a raw PET image for " + sub + " at " + ses)
@@ -89,7 +91,7 @@ def get_dkt_t1w_space_image(puptimecourse_obj,
     orig_hdr_path = os.path.join("pet_proc", "wmparc001.4dfp.hdr")
     new_img_path = os.path.join(ses_dir, "sub-" + sub + "_ses-" + ses + "_parcellation-DKT_space-T1w.img")
     new_hdr_path = os.path.join(ses_dir, "sub-" + sub + "_ses-" + ses + "_parcellation-DKT_space-T1w.hdr")
-    if not os.path.exists(new_img_path.replace('.img', '.nii*')):
+    if not os.path.exists(new_img_path.replace('.img', '.nii.gz')):
         get_image_and_header(puptimecourse_obj, orig_img_path, orig_hdr_path, new_img_path, new_hdr_path)
     else:
         print("Found an atlas in native space file for " + sub + " at " + ses)
@@ -107,7 +109,7 @@ def get_suvr_t1w_space_image(puptimecourse_obj,
                                 "sub-" + sub + "_ses-" + ses + "_acq-" + radiotracer + "_space-T1w_coregistered_pet.img")
     new_hdr_path = os.path.join(ses_dir,
                                 "sub-" + sub + "_ses-" + ses + "_acq-" + radiotracer + "_space-T1w_coregistered_pet.hdr")
-    if not os.path.exists(new_img_path.replace('.img', '.nii')):
+    if not os.path.exists(new_img_path.replace('.img', '.nii.gz')):
         get_image_and_header(puptimecourse_obj, orig_img_path, orig_hdr_path, new_img_path, new_hdr_path)
     else:
         print("Found an SUVR file in native space for " + sub + " at " + ses)
