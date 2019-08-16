@@ -1,0 +1,4 @@
+nibabel==2.4.1
+numpy==1.16.4
+pyxnat==1.1.0.2
+git+https://github.com/NeuroimagingUIowa/xnat_downloader
