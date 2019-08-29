@@ -125,8 +125,8 @@ def main():
                         help="Specify the associated password")
     parser.add_argument("--project",
                         help="Specify the project/data collection, e.g. DIANDF11")
-    parser.add_argument("--ses",
-                        help="Specify the visit label or session, e.g. v00")
+    parser.add_argument("--ses", nargs="+",
+                        help="Specify the visit labels or sessions to download, e.g. v00")
     parser.add_argument("--subjects", action="append",
 			help="Specify a subject or list of subjects for which to download images")
     parser.add_argument("--radiotracer",
@@ -135,7 +135,7 @@ def main():
                         help="Specify the directory where to write the outputs")
 
     args = parser.parse_args()
-    ses = args.ses
+    sessions = args.ses
     radiotracer = args.radiotracer
     output_dir = args.output_dir
     server = args.server
@@ -156,29 +156,30 @@ def main():
         print(sub)
         testSub = run.Subject(proj_obj, sub)
         testSub.get_sessions()
-        ses_of_interest = sub + "_" + ses + "_" + radiotracer
-        if ses_of_interest in testSub.ses_dict.keys():
-            puptimecourse_obj = get_PUP_timecourse_object(testSub, ses_of_interest)
-            if puptimecourse_obj is not None:
-                sub_dir = os.path.join(output_dir, "sub-" + sub)
-                ses_dir = os.path.join(sub_dir, "ses-" + ses)
-                if not os.path.exists(sub_dir):
-                    os.mkdir(sub_dir)
-                    os.mkdir(ses_dir)
-                else:
-                    if not os.path.exists(ses_dir):
+        for ses in sessions:
+            ses_of_interest = sub + "_" + ses + "_" + radiotracer
+            if ses_of_interest in testSub.ses_dict.keys():
+                puptimecourse_obj = get_PUP_timecourse_object(testSub, ses_of_interest)
+                if puptimecourse_obj is not None:
+                    sub_dir = os.path.join(output_dir, "sub-" + sub)
+                    ses_dir = os.path.join(sub_dir, "ses-" + ses)
+                    if not os.path.exists(sub_dir):
+                        os.mkdir(sub_dir)
                         os.mkdir(ses_dir)
-                get_t1w_image(puptimecourse_obj, ses_dir, sub, ses)
-                get_dkt_t1w_space_image(puptimecourse_obj, ses_dir, sub, ses)
-                get_suvr_t1w_space_image(puptimecourse_obj, ses_dir, sub, ses, radiotracer)
-                get_orig_pet_image(puptimecourse_obj, ses_dir, sub, ses)
-                get_orig_pet_info_file(puptimecourse_obj, ses_dir, sub, ses)
+                    else:
+                        if not os.path.exists(ses_dir):
+                            os.mkdir(ses_dir)
+                    get_t1w_image(puptimecourse_obj, ses_dir, sub, ses)
+                    get_dkt_t1w_space_image(puptimecourse_obj, ses_dir, sub, ses)
+                    get_suvr_t1w_space_image(puptimecourse_obj, ses_dir, sub, ses, radiotracer)
+                    get_orig_pet_image(puptimecourse_obj, ses_dir, sub, ses)
+                    get_orig_pet_info_file(puptimecourse_obj, ses_dir, sub, ses)
 
-                print("Finished downloading images for: " + ses_of_interest)
-            else:
-                print("No PUP timecourse available for: " + ses_of_interest)
-	else:
-	    print(sub + " does not have a " + ses + " session")
+                    print("Finished downloading images for: " + ses_of_interest)
+                else:
+                    print("No PUP timecourse available for: " + ses_of_interest)
+    	    else:
+    	       print(sub + " does not have a " + ses + " session")
 
 
 if __name__ == "__main__":
