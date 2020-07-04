@@ -1,0 +1,3 @@
+[submodule "xnat_downloader"]
+	path = xnat_downloader
+	url = https://github.com/HBClab/xnat_downloader
