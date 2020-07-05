@@ -1,1 +1,2 @@
-run_xnat_PUP_downloader.sh
+run_xnat_PUP_downloader_DIAN.sh
+run_xnat_PUP_downloader_OASIS.sh
