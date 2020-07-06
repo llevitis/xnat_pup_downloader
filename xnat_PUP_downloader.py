@@ -4,6 +4,7 @@ sys.path.insert(0, "xnat_downloader")
 import xnat_downloader.cli.run as run
 import os
 import argparse
+import json
 from pyxnat import Interface
 
 
@@ -79,6 +80,32 @@ def get_orig_pet_image(puptimecourse_obj,
     else:
         print("Found a raw PET image for " + sub + " at " + ses)
 
+def get_pup_params_file(puptimecourse_obj,
+                        ses_dir, 
+                        sub,
+                        ses):
+    filename_prefix = sub + "_PIB_" + ses                
+    orig_params_path = os.path.join("pet_proc", filename_prefix +  ".params")
+    new_params_path = os.path.join(ses_dir, filename_prefix + ".params")
+    new_params_json_path = os.path.join(ses_dir, "sub-" + sub + "_ses-" + ses + "_PUP_params.json")
+    if not os.path.exists(new_params_json_path):
+        print("Downloading PUP params file to: " + new_params_path)
+        get_image_and_header(
+            puptimecourse_obj, orig_params_path, None, new_params_path, None)
+        with open(new_params_path, "r") as f: 
+            params = f.read() 
+            params = params.split("\n")
+            params = params[0:len(params)-1]
+        params_dict = {} 
+        for i in range(0, len(params)): 
+            entry = params[i]
+            key = entry.split("=")[0]
+            value = entry.split("=")[1]
+            params_dict[key] = value
+        with open(new_params_json_path, "w") as f: 
+            json.dump(params_dict, f)
+    else:
+        print("Found a PUP .params file for" + sub + " at " + ses)
 
 def get_orig_pet_info_file(puptimecourse_obj,
                            ses_dir,
@@ -247,35 +274,32 @@ def main():
                     print(sub + " does not have a " + ses + " session")
         elif project == "OASIS3":
             for ses in testSub.ses_dict.keys():
-                if radiotracer == ses.split("_")[1]
+                if radiotracer == ses.split("_")[1]:
                     puptimecourse_obj = get_PUP_timecourse_object(
-                        testSub, ses_of_interest)
+                        testSub, ses)
                     if puptimecourse_obj is not None:
+                        sessionID = ses.split("_")[2]
                         sub_dir = os.path.join(output_dir, "sub-" + sub)
-                        ses_dir = os.path.join(sub_dir, "ses-" + ses)
+                        ses_dir = os.path.join(sub_dir, "ses-" + sessionID)
                         if not os.path.exists(sub_dir):
                             os.mkdir(sub_dir)
                             os.mkdir(ses_dir)
                         else:
                             if not os.path.exists(ses_dir):
                                 os.mkdir(ses_dir)
-                        get_t1w_image(puptimecourse_obj, ses_dir, sub, ses)
+                        get_t1w_image(puptimecourse_obj, ses_dir, sub, sessionID)
                         get_dkt_t1w_space_image(
-                            puptimecourse_obj, ses_dir, sub, ses)
-                        if project == "DIAN":
-                            get_suvr_t1w_space_image(
-                                puptimecourse_obj, ses_dir, sub, ses, radiotracer)
-                        elif project == "OASIS3":
-                            
-                        get_orig_pet_image(puptimecourse_obj, ses_dir, sub, ses)
-                        get_orig_pet_info_file(
-                            puptimecourse_obj, ses_dir, sub, ses)
+                            puptimecourse_obj, ses_dir, sub, sessionID)
+                        get_moco_image(
+                            puptimecourse_obj, ses_dir, sub, sessionID, radiotracer)
+                        get_pup_params_file(puptimecourse_obj,
+                                            ses_dir, sub, sessionID)
     
-                        print("Finished downloading images for: " + ses_of_interest)
+                        print("Finished downloading images for: " + ses)
                     else:
-                        print("No PUP timecourse available for: " + ses_of_interest)
+                        print("No PUP timecourse available for: " + ses)
                 else:
-                    print(sub + " does not have a " + ses + " session")
+                    print(ses + " does not match the requested session")
 
 
 if __name__ == "__main__":
